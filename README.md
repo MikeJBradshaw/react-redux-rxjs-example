@@ -26,36 +26,43 @@ If you `ll src/` you will see these 3 directories.
 Each component gets _AT MOST_ 1 action file, 1 reducer file and 1 epic file, and these are __ALWAYS__ named after the parent 
 component. So if your component is called `League.tsx`, you will have `actions/league.ts`, reducers/league.ts, and epics/league.ts
 
-Ok with that basic knowledge, open up `App.tsx` and lets look at some examples. In `App.tsx`, you will see 4 components imported
+Ok with that basic knowledge, open up `App.tsx` and lets look at some examples. In `App.tsx`, you will see 3 components imported
 but not used (yet). Starting with ExampleOne...
 
-exampleOne.ts shows 2 actions. These are very basic but demonstrate the 2 basic types of state update. Actions with no payload
+`exampleOne.ts` shows 2 actions. These are very basic but demonstrate the 2 basic types of state update. Actions with no payload
 and actions with a payload. Lets look at the anatomy of an action:
 
 The action name follows the same pattern. the variable name can be whatever you want (but make it match as closely as possible)
 and the value is always componentName_actionName.
 
+```
 export const INIT = 'EXAMPLE_ONE_INIT' 
+```
 
 actionName follows the same patterns:
 - UPDATE to update state
 - FETCH to fetch data from the server
 - INIT for when compoent does mount,
 - UNMOUNT for component unmounting 
-
 and (rarely) something declarative like 'validate' with the verb being very clear what it does.
 
-the interface shows exactly what the action will look like when it flows through our app, notice the top action does not
+The interface shows exactly what the action will look like when it flows through our app, notice the top action does not
 have a payload, and the bottom one does:
+
+```
 export interface InitAction { type: typeof INIT }
-export interface UpdateRandomNumberAction { type: typeof UPDATE_RANDOM_NUMBER, newNumber: number }
+export interface UpdateChoiceAction { type: typeof UPDATE_CHOICE, newNumber: number }
+```
 
 And last but not least, the factory method to create the action. Notice the naming, its named just like the interface EXCEPT
 it does not have 'action' on the end.
-export const init = (): InitAction => ({ type: INIT })
-export const updateRandomNumber = (newNumber: number): UpdateRandomNumberAction => ({ type: UPDATE_RANDOM_NUMBER, newNumber })
 
-Now open the src/reducers/exampleOne.ts and lets see how actions influence the state of the app.
+```
+export const init = (): InitAction => ({ type: INIT })
+export const updateChoice = (newNumber: number): UpdateChoiceAction => ({ type: UPDATE_CHOICE, newNumber })
+```
+
+Now open the `src/reducers/exampleOne.ts` and lets see how actions influence the state of the app.
 
 This is a very basic reducer, but in the essence, this is all that is needed to 1) give this app state, and 2) update state.
 Starting from the top, we import the reducer type, then we import our action names and all the actions declared. Below that
@@ -65,7 +72,7 @@ The concept of a reducer is simple. a reducer take the current state and an acti
 YOU DO NOT have to act on all the declared actions. Here we are, in other examples we will not. The actions you describe flow into
 this reducer. We look at the action type, and that action type will determine how to update the state.
 
-Look at the first example, case INIT. this action simply generates the random numbers to choose. In the case of UPDATE_RANDOM_NUMBER
+Look at the first example, `case INIT`. This action simply generates the random numbers to choose. In the case of UPDATE_RANDOM_NUMBER
 this case sets your number choice and generates new numbers except for the last one, its the one you choose
 
 Because this is all synchronous data, there does NOT need to be an epic. What we have created is all that is needed for a react app to work
@@ -82,12 +89,12 @@ with redux. Open up `src/views/ExampleOne.tsx` and lets see how state is used in
 
 ## BEFORE WE START....
 Lets talk some ideas and terminology:
-- pipe: a pipe is just that, a pipe for data to flow. good ways to think about this is a pipe being a water pipe and the data being
+- pipe: A pipe is just that, a pipe for data to flow. good ways to think about this is a pipe being a water pipe and the data being
 water.... starts at one end, something might be done to that water, and it comes out the other end. always. you never have water just
 chilling. ANOTHER example (and my personal favorite) is a christmas conveyor belt at the north pole. raw materials are dropped on it at
 one side, these parts are used, and end of the belt is a toy.
 
-- operators: using the example about christmas conveyor belt, the operators are the elves. they ...wait for it... operate 
+- operators: Using the example about christmas conveyor belt, the operators are the elves. they ...wait for it... operate 
 in some way on the data, transform it, and put it back onto the conveyor belt for the next operator to use. after all the
 elves (operators) get done doing their small part, what comes out the end is a toy.
 
@@ -102,31 +109,29 @@ This is ALWAYS the case. ALWAYS. One of the real powerful things of redux is you
 and there is never a black box. It makes debugging very simple.
 
 ## Ok, Lets See The Complexity
-_BECAUSE WE ALWAYS START WTIH ACTIONS_, look at src/actions/exampleTwo.ts. we added two new actions, FETCH_TIMESTAMP and UPDATE_TIMESTAMP. This is
-our first chance to use an epic (more about that later), but for right now, notice the naming convention between the type, the interface and
+_BECAUSE WE ALWAYS START WTIH ACTIONS_, look at `src/actions/exampleTwo.ts`. We added two new actions, FETCH_TIMESTAMP and UPDATE_TIMESTAMP. This is
+our first chance to use an epic (more about that later), but for right now, notice the naming convention between the types, the interface and
 the factory method.
 
-_BECAUSE AFTER ACTIONS WE ALWAYS OPEN THE REDUCER_, lets open src/reducers/exampleTwo.ts. notice that of the two new actions we
-have declared, only one is in here, UPDATE_TIMESTAMP. We can see this action indeed does update a new, not optional field of
-timestamp, but we dont see (yet) where this comes from. Also look at the newly declared initState. notice that we START with
-a timestamp, this is not optional and look how we use the initState, its the default value for our reducer.
+_BECAUSE AFTER ACTIONS WE ALWAYS OPEN THE REDUCER_, Lets open `src/reducers/exampleTwo.ts`. Notice that of the two new actions we
+have declared, only one is in here, `UPDATE_TIMESTAMP`. We can see this action indeed does update a new, not optional field of
+timestamp, but we dont see (yet) where this comes from. Also look at the newly declared initState. Notice that we START with
+a timestamp, this is not optional and look how we use the `initState`, its the default value for our reducer.
 
-_BECAUSE AFTER ACTIONS AND REDUCERS WE ALWAYS OPEN THE EPICS_, lets open src/epics/exampleTwo.js. OUR FIRST EPIC!
-This epic is basic....very basic. this epic is triggered by the INIT action, and every second (done by timer) updates our
-state with the new timestamp lets take it from the top and see what goes into epics.
+_BECAUSE AFTER ACTIONS AND REDUCERS WE ALWAYS OPEN THE EPICS_, Lets open `src/epics/exampleTwo.ts`. OUR FIRST EPIC!
+This epic is basic....very basic. this epic is triggered by the `FETCH_TIMESTAP` action and updates our
+state with the new timestamp. Lets take it from the top and see what goes into epics.
 
 First we see the import of redux/redux-observable/rxjs stuff.
 
-Walking down, we see initEpic, a function that takes an observable and returns a new observable. We see ofType(INIT). This filters
-out all non INIT actions from proceeeding. You wont have other actions triggering this epic. we then see switchMap(() => timer(0, 5000)).
-This is the timer function. Every 5 seconds, it re emits a value (which here we are not using), and puts that value into
-the pipe(). That value flows into map (again, we are ignoring the value) and emitting the updateTimestamp action. There you
-go, with absolutely no magic, we get a timestamp update every 5 sec. That action flows into the reducer, who then updates state and
-the component is rerendered.
+Walking down, we see `generateTimestapEpic`, a function that takes an observable and returns a new observable. We see `ofType(FETCH_TIMESTAMP)`. This filters
+out all non `FETCH_TIMESTAMP` actions from proceeeding. You wont have other actions triggering this epic. 
+We also see a map emitting the updateTimestamp action. There you go, with absolutely no magic, we get a timestamp. That 
+action flows into the reducer, who then updates state and the component is rerendered.
 
-_BECAUSE AFTER THE ACTIONS, REDUCERS AND EPICS WE OPEN THE COMPONENT_, lets open src/views/ExampleTwo.tsx. This is very much
-the same thing as before EXCEPT we now have a field is that is timestamp. Really not much else to see here, in App.tsx, 
-replace <ExampleOne /> with <ExampleTwo /> and see how the app works.
+_BECAUSE AFTER THE ACTIONS, REDUCERS AND EPICS WE OPEN THE COMPONENT_, Lets open `src/views/ExampleTwo.tsx`. This is very much
+the same thing as before EXCEPT we now have a field is that is timestamp and a button to tell the epic to generate. 
+Really not much else to see here, in `App.tsx`, replace `<ExampleOne />` with ``<ExampleTwo />`` and see how the app works.
 
 ## What We Learned:
 - EVERY epic has 1) and action that triggers it, and 2) at least one action it returns
@@ -136,27 +141,15 @@ replace <ExampleOne /> with <ExampleTwo /> and see how the app works.
 
 # 3) A Quick Look To See How State Is Managed In Multiple Components
 
-This isnt a long section. Actions, reducers, and epics havent changed, but what we HAVE done is in the main view, we
-added a child component. So here, we are going to break protocol. This time and this time only, you dont have to open ACTIONS
-THEN REDUCERS THEN EPICS THEN THE COMPONENTS, instead just open src/views/ExampleThree.tsx and src/utils/Timestamp.tsx
+This isnt a long section. Actions, reducers, and epics havent changed much. The epic is now a timer that spits out
+timestamps on an interval basis and also can be canceled when `STOP_TIMESTAMP` is emitted. We also added a child component. 
+So here, we are going to break protocol. This time and this time only, you dont have to open ACTIONS THEN REDUCERS THEN 
+EPICS THEN THE COMPONENTS, instead just open `src/views/ExampleThree.tsx` and `src/utils/Timestamp.tsx`
 
-Notice that Timestamp.tsx DOES NOT have actions/reducers/epics associated with it. Instead, all of its data is supplied
+Notice that `Timestamp.tsx` DOES NOT have actions/reducers/epic files associated with it. Instead, all of its data is supplied
 by its parent. In Vanilla react, timestamp would be passed in as props. In redux, we just connect it to the store and use
-the data however we want.
+the data however we want. Switch out to `ExampleThree.tsx` and give it a whirl
 
 ## WHAT WE LEARNED:
 - not every component needs actions much less reducers or epics
 - to use ANY data from the state, just hook up the component up to the store and go nuts
-
-# 4) Nero Fiddled While Rome Burned
-
-## BEFORE WE START ...
-Im cranking up the complexity more, but remember, ALL OF THIS follows the same patterns as above. Follow the procedures
-I used above, and try to identify the flow of the app. Ask yourself...
-1) Where are these actions dispatched
-2) What are they doing
-
-If you can answer this, you are in great shape.
-
-There is no magic, no mystery, and its not scary. You have all the info you need to see how this app works, so can you
-figure it out? Run <ExampleFour /> and watch it go!
