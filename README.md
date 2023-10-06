@@ -1,5 +1,6 @@
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+
 This is an example of how a react app works with redux and rxjs.
 
 # 0) BEFORE WE START
